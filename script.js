@@ -1,4 +1,4 @@
-// 7
+// g
 let appData = {
     bgImage: "https://i.imgur.com/zBiuzeO.png",
     flowers: [
@@ -8,18 +8,20 @@ let appData = {
     ],
     bouquetImg: "https://files.catbox.moe/4x9xll.png",
     
-    // 9
+    // bn
     birthdayLetter: {
         title: "Happy Birthday, My Love",
         message: "I created this special ocyank world just for you xixixix. Baby, thank you for being my constant warmth and joy.. I'm sorry for all my mistakes, I hope this year brings you as much happiness as you bring into my life every day.. I want you to live a long healthy life with me, I want to be there for you, till I die. Please let me be with you forever"
     },
 
-    // 12
-    backgroundSong: {
-        title: "The first song that played when I saw you",
-        artist: "The Beatles",
-        url: "https://files.catbox.moe/wlc7ss.mp3"
-    },
+    // 5
+    songs: [
+        { title: "Nine in the Afternoon", artist: "Panic! At The Disco", url: "https://files.catbox.moe/97lbcx.mp3", img: "https://files.catbox.moe/r0ke0u.png" },
+        { title: "Just The Way You Are", artist: "Billy Joel", url: "https://files.catbox.moe/0llv4m.mp3", img: "https://files.catbox.moe/31h53t.png" },
+        { title: "This Town", artist: "Niall Horan", url: "https://files.catbox.moe/g2a1yq.mp3", img: "https://files.catbox.moe/kapvlf.png" },
+        { title: "Kahit Maputi Na Ang Buhok Ko", artist: "Rey Valera", url: "https://files.catbox.moe/kjlsq2.m4a", img: "https://files.catbox.moe/tnutb4.png" },
+        { title: "Forevermore", artist: "Side A", url: "https://files.catbox.moe/3nonsg.m4a", img: "https://files.catbox.moe/rm6e9t.png" }
+    ],
 
     fishImages: [
         "https://files.catbox.moe/xrgdzd.png",
@@ -47,51 +49,87 @@ let appData = {
     ]
 };
 
-// 8
-let bgAudio = null;
-let isPlaying = false;
+// Ao
+let currentAudio = null;
+let playingIndex = null;
 
-// f
+// Sj
 function startExperience() {
     document.getElementById('welcome-modal').classList.add('hidden');
     openLetterModal();
     
-    // click
-    if (!bgAudio) {
-        bgAudio = new Audio(appData.backgroundSong.url);
-        bgAudio.loop = true; // loop
+    // Automatically start playing the first song on click
+    if (appData.songs.length > 0) {
+        togglePlaySong(0);
     }
-    bgAudio.play().then(() => {
-        isPlaying = true;
-        updateGlobalPlayButton();
-    }).catch(e => {
-        console.log("Audio play blocked:", e);
+}
+
+// [n
+function renderPlaylist() {
+    const container = document.getElementById('playlist-container');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    appData.songs.forEach((song, idx) => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-3 rounded-2xl bg-sky-950/50 border border-cyan-400/30 hover:bg-sky-900/60 transition-colors';
+        
+        item.innerHTML = `
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-sky-900 overflow-hidden flex items-center justify-center font-bold text-cyan-200 text-xs shadow-xs border border-cyan-400/40">
+                    <img src="${song.img}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0284c7/fff?text=Song'">
+                </div>
+                <div>
+                    <h5 class="text-xs font-bold text-white">${song.title}</h5>
+                    <p class="text-[10px] text-cyan-200 font-medium">${song.artist}</p>
+                </div>
+            </div>
+            <button onclick="togglePlaySong(${idx})" id="play-btn-${idx}" class="w-9 h-9 rounded-full bg-cyan-400 text-slate-950 flex items-center justify-center text-xs shadow-md hover:bg-cyan-300 transition-all transform active:scale-95 font-bold">
+                <i class="fa-solid fa-play"></i>
+            </button>
+        `;
+        container.appendChild(item);
     });
 }
 
-function toggleGlobalPlay() {
-    if (!bgAudio) {
-        bgAudio = new Audio(appData.backgroundSong.url);
-        bgAudio.loop = true;
+function togglePlaySong(index) {
+    const song = appData.songs[index];
+    const btn = document.getElementById(`play-btn-${index}`);
+    
+    if (playingIndex === index && currentAudio) {
+        if (currentAudio.paused) {
+            currentAudio.play();
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        } else {
+            currentAudio.pause();
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        }
+        return;
     }
-    if (isPlaying) {
-        bgAudio.pause();
-        isPlaying = false;
-    } else {
-        bgAudio.play();
-        isPlaying = true;
+
+    if (currentAudio) {
+        currentAudio.pause();
+        if (playingIndex !== null) {
+            const prevBtn = document.getElementById(`play-btn-${playingIndex}`);
+            if (prevBtn) prevBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        }
     }
-    updateGlobalPlayButton();
+
+    currentAudio = new Audio(song.url);
+    currentAudio.play().then(() => {
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        playingIndex = index;
+    }).catch(e => {
+        console.log("Audio playback error:", e);
+    });
+
+    currentAudio.onended = () => {
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        playingIndex = null;
+    };
 }
 
-function updateGlobalPlayButton() {
-    const btn = document.getElementById('global-music-btn');
-    if (btn) {
-        btn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause"></i> Pause Music' : '<i class="fa-solid fa-music"></i> Play Music';
-    }
-}
-
-// cn
+// lm
 function openLetterModal() {
     document.getElementById('letter-title-text').innerText = appData.birthdayLetter.title;
     document.getElementById('letter-body-text').innerText = appData.birthdayLetter.message;
@@ -259,5 +297,5 @@ window.onload = function() {
     renderGallery();
     renderMemoriesBoard();
     renderPlaylist(); 
-    initBgFishSchool();
+    initBgFishSchool(); 
 };
