@@ -1,4 +1,4 @@
-// g
+// 7
 let appData = {
     bgImage: "https://i.imgur.com/zBiuzeO.png",
     flowers: [
@@ -8,10 +8,17 @@ let appData = {
     ],
     bouquetImg: "https://files.catbox.moe/4x9xll.png",
     
-    // bn
+    // 9
     birthdayLetter: {
         title: "Happy Birthday, My Love",
         message: "I created this special ocyank world just for you xixixix. Baby, thank you for being my constant warmth and joy.. I'm sorry for all my mistakes, I hope this year brings you as much happiness as you bring into my life every day.. I want you to live a long healthy life with me, I want to be there for you, till I die. Please let me be with you forever"
+    },
+
+    // 12 
+    backgroundSong: {
+        title: "The first song that played when I saw you",
+        artist: "The Beatles",
+        url: "https://files.catbox.moe/wlc7ss.mp3"
     },
 
     // 5
@@ -49,22 +56,52 @@ let appData = {
     ]
 };
 
-// Ao
-let currentAudio = null;
+// Audio variables
+let bgAudio = null;
+let isPlaying = false;
+let currentPlaylistAudio = null;
 let playingIndex = null;
 
-// Sj
+// Starts experience, opens letter, and auto-plays your Beatles song
 function startExperience() {
     document.getElementById('welcome-modal').classList.add('hidden');
     openLetterModal();
     
-    // Automatically start playing the first song on click
-    if (appData.songs.length > 0) {
-        togglePlaySong(0);
+    if (!bgAudio) {
+        bgAudio = new Audio(appData.backgroundSong.url);
+        bgAudio.loop = true;
+    }
+    bgAudio.play().then(() => {
+        isPlaying = true;
+        updateGlobalPlayButton();
+    }).catch(e => {
+        console.log("Audio play blocked:", e);
+    });
+}
+
+function toggleGlobalPlay() {
+    if (!bgAudio) {
+        bgAudio = new Audio(appData.backgroundSong.url);
+        bgAudio.loop = true;
+    }
+    if (isPlaying) {
+        bgAudio.pause();
+        isPlaying = false;
+    } else {
+        bgAudio.play();
+        isPlaying = true;
+    }
+    updateGlobalPlayButton();
+}
+
+function updateGlobalPlayButton() {
+    const btn = document.getElementById('global-music-btn');
+    if (btn) {
+        btn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause"></i> Pause Music' : '<i class="fa-solid fa-music"></i> Play Music';
     }
 }
 
-// [n
+// Renders the 5-song playlist in the Pond view
 function renderPlaylist() {
     const container = document.getElementById('playlist-container');
     if (!container) return;
@@ -93,43 +130,50 @@ function renderPlaylist() {
 }
 
 function togglePlaySong(index) {
+    // If background Beatles song is playing, pause it so playlist can take over
+    if (bgAudio && !bgAudio.paused) {
+        bgAudio.pause();
+        isPlaying = false;
+        updateGlobalPlayButton();
+    }
+
     const song = appData.songs[index];
     const btn = document.getElementById(`play-btn-${index}`);
     
-    if (playingIndex === index && currentAudio) {
-        if (currentAudio.paused) {
-            currentAudio.play();
+    if (playingIndex === index && currentPlaylistAudio) {
+        if (currentPlaylistAudio.paused) {
+            currentPlaylistAudio.play();
             if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         } else {
-            currentAudio.pause();
+            currentPlaylistAudio.pause();
             if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i>';
         }
         return;
     }
 
-    if (currentAudio) {
-        currentAudio.pause();
+    if (currentPlaylistAudio) {
+        currentPlaylistAudio.pause();
         if (playingIndex !== null) {
             const prevBtn = document.getElementById(`play-btn-${playingIndex}`);
             if (prevBtn) prevBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         }
     }
 
-    currentAudio = new Audio(song.url);
-    currentAudio.play().then(() => {
+    currentPlaylistAudio = new Audio(song.url);
+    currentPlaylistAudio.play().then(() => {
         if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         playingIndex = index;
     }).catch(e => {
         console.log("Audio playback error:", e);
     });
 
-    currentAudio.onended = () => {
+    currentPlaylistAudio.onended = () => {
         if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i>';
         playingIndex = null;
     };
 }
 
-// lm
+// cn
 function openLetterModal() {
     document.getElementById('letter-title-text').innerText = appData.birthdayLetter.title;
     document.getElementById('letter-body-text').innerText = appData.birthdayLetter.message;
@@ -275,7 +319,7 @@ function switchView(target) {
 function openPhotoModal(index, titleText) {
     document.getElementById('lightbox-img').src = appData.photos[index].url;
     document.getElementById('lightbox-title').innerText = titleText || 'Memory Snapshot';
-    document.getElementById('photo-modal').classList.remove('hidden');
+    document.getElementById('photo-modal').classList.add('hidden');
 }
 
 function closePhotoModal() { 
